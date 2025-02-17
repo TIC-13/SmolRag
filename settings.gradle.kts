@@ -1,6 +1,7 @@
 import java.net.URI
 
 include(":hf-model-hub-api")
+include(":rag-android")
 
 
 pluginManagement {

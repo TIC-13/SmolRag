@@ -1,3 +1,6 @@
 [submodule "llama.cpp"]
 	path = llama.cpp
 	url = https://github.com/ggerganov/llama.cpp
+[submodule "rag-android"]
+	path = rag-android
+	url = https://github.com/TIC-13/rag-android.git

@@ -69,14 +69,14 @@
     <string name="download_model_hf_screen_title">Browse Models from HuggingFace</string>
     <string name="download_model_hf_search_label">Search for models ...</string>
     <string name="download_model_hf_details_title">Model Details</string>
-    <string name="dialog_ctx_usage_title">Context Length Usage</string>
-    <string name="dialog_ctx_usage_text">You have consumed %1$s tokens out of available %2$s tokens.</string>
-    <string name="dialog_ctx_usage_close">Close</string>
-    <string name="dialog_err_title">An error occurred</string>
-    <string name="dialog_err_text">The app is unable to load the model. The error message is: %1$s</string>
-    <string name="dialog_err_change_model">Change model</string>
-    <string name="dialog_err_close">Close</string>
-    <string name="dialog_progress_copy_model_title">Copying model file...</string>
-    <string name="dialog_progress_copy_model_text">%1$s\n(The model needs to be copied to the app\'s internal directory for use)</string>
-    <string name="toast_invalid_file">Invalid file</string>
+    <string name="dialog_ctx_usage_title" translatable="false">Context Length Usage</string>
+    <string name="dialog_ctx_usage_text" translatable="false">You have consumed %1$s tokens out of available %2$s tokens.</string>
+    <string name="dialog_ctx_usage_close" translatable="false">Close</string>
+    <string name="dialog_err_title" translatable="false">An error occurred</string>
+    <string name="dialog_err_text" translatable="false">The app is unable to load the model. The error message is: %1$s</string>
+    <string name="dialog_err_change_model" translatable="false">Change model</string>
+    <string name="dialog_err_close" translatable="false">Close</string>
+    <string name="dialog_progress_copy_model_title" translatable="false">Copying model file...</string>
+    <string name="dialog_progress_copy_model_text" translatable="false">%1$s\n(The model needs to be copied to the app\'s internal directory for use)</string>
+    <string name="toast_invalid_file" translatable="false">Invalid file</string>
 </resources>

@@ -49,6 +49,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "LICENSE-EPL-1.0.txt"
+            excludes += "LICENSE-EDL-1.0.txt"
         }
     }
     applicationVariants.configureEach {
@@ -84,6 +86,7 @@ dependencies {
 
     implementation(project(":smollm"))
     implementation(project(":hf-model-hub-api"))
+    implementation(project(":rag-android"))
 
     // Koin: dependency injection
     implementation(libs.koin.android)

@@ -56,6 +56,8 @@ import kotlinx.coroutines.withContext
 import org.koin.android.annotation.KoinViewModel
 import java.util.Date
 import kotlin.time.measureTime
+import ai.luxai.rag.Rag
+import ai.luxai.rag.FileUtilities
 
 const val LOGTAG = "[SmolLMAndroid-Kt]"
 val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
@@ -145,6 +147,14 @@ class ChatScreenViewModel(
                         }
                     },
                 ).build()
+        CoroutineScope(Dispatchers.Default).launch {
+            Rag.load(
+                context,
+                chunksFile = FileUtilities.copyAssetToFile(context, "chunks.csv"),
+                vectorsFile = FileUtilities.copyAssetToFile(context, "embeddings.csv"),
+                tokenizerFile = FileUtilities.copyAssetToFile(context, "tokenizer.json")
+            )
+        }
     }
 
     private fun spToPx(sp: Float): Int =
@@ -174,15 +184,16 @@ class ChatScreenViewModel(
             if (chat.isTask) {
                 messagesDB.deleteMessages(chat.id)
             }
-            messagesDB.addUserMessage(chat.id, query)
             _isGeneratingResponse.value = true
             responseGenerationJob =
                 CoroutineScope(Dispatchers.Default).launch {
+                    val promptWithContext = Rag.getPrompt(query)
+                    messagesDB.addUserMessage(chat.id, promptWithContext)
                     _partialResponse.value = ""
                     try {
                         val responseDuration =
                             measureTime {
-                                smolLM.getResponse(query).collect {
+                                smolLM.getResponse(promptWithContext).collect {
                                     _partialResponse.value += it
                                 }
                             }
@@ -322,8 +333,8 @@ class ChatScreenViewModel(
                 dialogText =
                     context.getString(
                         R.string.dialog_ctx_usage_text,
-                        chat.contextSizeConsumed,
-                        chat.contextSize,
+                        chat.contextSizeConsumed.toString(),
+                        chat.contextSize.toString(),
                     ),
                 dialogPositiveButtonText = context.getString(R.string.dialog_ctx_usage_close),
                 onPositiveButtonClick = {},
