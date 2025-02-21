@@ -58,6 +58,7 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -293,8 +294,21 @@ private fun ColumnScope.MessagesList(
                             putExtra(Intent.EXTRA_TEXT, chatMessage.message)
                         },
                     )
-                },
+                }
             )
+            if(chatMessage.isUserMessage){
+                //divider between prompt and response
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    HorizontalDivider(modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .fillMaxWidth(0.95f)
+                    )
+                }
+            }
         }
         if (isGeneratingResponse) {
             item {
