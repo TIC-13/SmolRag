@@ -152,7 +152,8 @@ class ChatScreenViewModel(
                 context,
                 chunksFile = FileUtilities.copyAssetToFile(context, "chunks.csv"),
                 vectorsFile = FileUtilities.copyAssetToFile(context, "embeddings.csv"),
-                tokenizerFile = FileUtilities.copyAssetToFile(context, "tokenizer.json")
+                embeddingTokenizerFile = FileUtilities.copyAssetToFile(context, "tokenizer.json"),
+                rerankerTokenizerFile = FileUtilities.copyAssetToFile(context, "reranker_tokenizer.json")
             )
         }
     }
