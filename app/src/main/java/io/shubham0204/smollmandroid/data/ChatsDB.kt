@@ -16,6 +16,7 @@
 
 package io.shubham0204.smollmandroid.data
 
+import ai.luxai.rag.Rag
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.kotlin.flow
@@ -87,7 +88,7 @@ class ChatsDB {
      */
     fun addChat(
         chatName: String,
-        systemPrompt: String = "You are a helpful assistant.",
+        systemPrompt: String = Rag.SYSTEM_MESSAGE,
         llmModelId: Long = -1,
         isTask: Boolean = false,
     ): Chat {

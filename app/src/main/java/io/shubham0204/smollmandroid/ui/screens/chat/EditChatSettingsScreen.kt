@@ -144,6 +144,7 @@ fun EditChatSettingsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     TextField(
+                        enabled = false,
                         modifier = Modifier.fillMaxWidth(),
                         value = systemPrompt,
                         onValueChange = { systemPrompt = it },
