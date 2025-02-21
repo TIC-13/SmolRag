@@ -282,7 +282,7 @@ class ChatScreenViewModel(
                                 model.path,
                                 chat.minP,
                                 chat.temperature,
-                                !chat.isTask,
+                                false,
                                 chat.contextSize.toLong(),
                             )
                             LOGD("Model loaded")
@@ -290,17 +290,17 @@ class ChatScreenViewModel(
                                 smolLM.addSystemPrompt(chat.systemPrompt)
                                 LOGD("System prompt added")
                             }
-                            if (!chat.isTask) {
-                                messagesDB.getMessagesForModel(chat.id).forEach { message ->
-                                    if (message.isUserMessage) {
-                                        smolLM.addUserMessage(message.message)
-                                        LOGD("User message added: ${message.message}")
-                                    } else {
-                                        smolLM.addAssistantMessage(message.message)
-                                        LOGD("Assistant message added: ${message.message}")
-                                    }
-                                }
-                            }
+//                            if (!chat.isTask) {
+//                                messagesDB.getMessagesForModel(chat.id).forEach { message ->
+//                                    if (message.isUserMessage) {
+//                                        smolLM.addUserMessage(message.message)
+//                                        LOGD("User message added: ${message.message}")
+//                                    } else {
+//                                        smolLM.addAssistantMessage(message.message)
+//                                        LOGD("Assistant message added: ${message.message}")
+//                                    }
+//                                }
+//                            }
                             withContext(Dispatchers.Main) { _modelLoadState.value = ModelLoadingState.SUCCESS }
                         } catch (e: Exception) {
                             _modelLoadState.value = ModelLoadingState.FAILURE
