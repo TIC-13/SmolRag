@@ -58,6 +58,7 @@ import java.util.Date
 import kotlin.time.measureTime
 import ai.luxai.rag.Rag
 import ai.luxai.rag.FileUtilities
+import ai.luxai.rag.RerankingProps
 
 const val LOGTAG = "[SmolLMAndroid-Kt]"
 val LOGD: (String) -> Unit = { Log.d(LOGTAG, it) }
@@ -152,8 +153,12 @@ class ChatScreenViewModel(
                 context,
                 chunksFile = FileUtilities.copyAssetToFile(context, "chunks.csv"),
                 vectorsFile = FileUtilities.copyAssetToFile(context, "embeddings.csv"),
+                modelFile = FileUtilities.copyAssetToFile(context, "bge-small-en-v1.5.onnx"),
                 embeddingTokenizerFile = FileUtilities.copyAssetToFile(context, "tokenizer.json"),
-                rerankerTokenizerFile = FileUtilities.copyAssetToFile(context, "reranker_tokenizer.json")
+                rerankerProps = RerankingProps(
+                    tokenizer = FileUtilities.copyAssetToFile(context, "reranker_tokenizer.json"),
+                    model = FileUtilities.copyAssetToFile(context, "mxbai-reranker-xsmall.onnx")
+                )
             )
         }
     }
