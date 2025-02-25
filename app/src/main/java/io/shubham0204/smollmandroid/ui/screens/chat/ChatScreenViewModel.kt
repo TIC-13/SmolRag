@@ -193,13 +193,13 @@ class ChatScreenViewModel(
             _isGeneratingResponse.value = true
             responseGenerationJob =
                 CoroutineScope(Dispatchers.Default).launch {
-                    val promptWithContext = Rag.getPrompt(query)
-                    messagesDB.addUserMessage(chat.id, promptWithContext)
+                    val ragPrompt = Rag.getPrompt(query)
+                    messagesDB.addUserMessage(chat.id, ragPrompt.query)
                     _partialResponse.value = ""
                     try {
                         val responseDuration =
                             measureTime {
-                                smolLM.getResponse(promptWithContext).collect {
+                                smolLM.getResponse(ragPrompt.userMessage).collect {
                                     _partialResponse.value += it
                                 }
                             }
