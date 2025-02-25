@@ -296,7 +296,7 @@ private fun ColumnScope.MessagesList(
                     )
                 }
             )
-            if(chatMessage.isUserMessage){
+            if(!chatMessage.isUserMessage){
                 //divider between prompt and response
                 Column(
                     modifier = Modifier
