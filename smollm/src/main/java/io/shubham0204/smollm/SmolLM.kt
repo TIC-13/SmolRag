@@ -112,7 +112,7 @@ class SmolLM {
         modelPath: String,
         minP: Float,
         temperature: Float,
-        storeChats: Boolean = false,
+        storeChats: Boolean,
         contextSize: Long,
     ): Boolean =
         withContext(Dispatchers.IO) {
