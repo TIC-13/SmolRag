@@ -19,7 +19,7 @@ This project is an evolution of [**SmolChat**](https://github.com/shubham0204/Sm
 1. Clone the repository with its submodule originating from llama.cpp,
 
 ```commandline
-git clone --depth=1 https://github.com/TIC13/SmolRag
+git clone https://github.com/TIC-13/SmolRag.git
 cd SmolRag
 git submodule update --init --recursive
 ```
