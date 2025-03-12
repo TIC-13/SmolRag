@@ -180,41 +180,60 @@ class ChatScreenViewModel(
     fun updateChat(chat: Chat) {
         _currChatState.value = chat
         chatsDB.updateChat(chat)
-        loadModel()
+        CoroutineScope(Dispatchers.Default).launch {
+            loadModel()
+        }
     }
 
     fun sendUserQuery(query: String) {
+
+        _partialResponse.value = ""
+
         _currChatState.value?.let { chat ->
-            chat.dateUsed = Date()
-            chatsDB.updateChat(chat)
-            if (chat.isTask) {
-                messagesDB.deleteMessages(chat.id)
-            }
-            _isGeneratingResponse.value = true
-            responseGenerationJob =
-                CoroutineScope(Dispatchers.Default).launch {
+
+            messagesDB.deleteMessages(chat.id)
+
+            CoroutineScope(Dispatchers.Default).launch {
+                // Wait for the model to load
+                val modelLoaded = loadModel()
+                if (!modelLoaded) {
+                    // If model loading failed or dialog was shown, stop here
+                    return@launch
+                }
+
+                // Proceed only if model is loaded successfully
+                chat.dateUsed = Date()
+                chatsDB.updateChat(chat)
+                if (chat.isTask) {
+                    messagesDB.deleteMessages(chat.id)
+                }
+                withContext(Dispatchers.Main) {
+                    _isGeneratingResponse.value = true
+                }
+                responseGenerationJob = launch {
                     val ragPrompt = Rag.getPrompt(query)
                     val chatMessage = "Context ${ragPrompt.contexts[0]}<br><br>" +
-                                      "Context ${ragPrompt.contexts[1]}<br><br>" +
-                                      "Query: ${ragPrompt.query}"
+                            "Context ${ragPrompt.contexts[1]}<br><br>" +
+                            "Query: ${ragPrompt.query}"
                     messagesDB.addUserMessage(chat.id, chatMessage)
-                    _partialResponse.value = ""
+                    withContext(Dispatchers.Main) {
+                        _partialResponse.value = ""
+                    }
                     try {
-                        val responseDuration =
-                            measureTime {
-                                smolLM.getResponse(ragPrompt.userMessage).collect {
+                        val responseDuration = measureTime {
+                            smolLM.getResponse(ragPrompt.userMessage).collect {
+                                withContext(Dispatchers.Main) {
                                     _partialResponse.value += it
                                 }
                             }
+                        }
                         // Replace <think> tags with <blockquote> tags
-                        // to get a neat Markdown rendering
-                        _partialResponse.value =
-                            findThinkTagRegex.replace(_partialResponse.value) { matchResult ->
-                                "<blockquote>${matchResult.groupValues[1]}</blockquote>"
-                            }
-                        // once the response is generated
-                        // add to the messages database
-                        // and update the context length used for the current chat
+                        val finalResponse = findThinkTagRegex.replace(_partialResponse.value) { matchResult ->
+                            "<blockquote>${matchResult.groupValues[1]}</blockquote>"
+                        }
+                        withContext(Dispatchers.Main) {
+                            _partialResponse.value = finalResponse
+                        }
                         messagesDB.addAssistantMessage(chat.id, _partialResponse.value)
                         chatsDB.updateChat(chat.copy(contextSizeConsumed = smolLM.getContextLengthUsed()))
                         withContext(Dispatchers.Main) {
@@ -223,21 +242,23 @@ class ChatScreenViewModel(
                             responseGenerationTimeSecs = responseDuration.inWholeSeconds.toInt()
                         }
                     } catch (e: CancellationException) {
-                        // ignore CancellationException, as it was called because
-                        // `responseGenerationJob` was cancelled in the `stopGeneration` method
+                        // Ignore CancellationException
                     } catch (e: Exception) {
-                        _partialResponse.value = ""
-                        _isGeneratingResponse.value = false
-                        createAlertDialog(
-                            dialogTitle = "An error occurred",
-                            dialogText = "The app is unable to process the query. The error message is: ${e.message}",
-                            dialogPositiveButtonText = "Change model",
-                            onPositiveButtonClick = {},
-                            dialogNegativeButtonText = "",
-                            onNegativeButtonClick = {},
-                        )
+                        withContext(Dispatchers.Main) {
+                            _partialResponse.value = ""
+                            _isGeneratingResponse.value = false
+                            createAlertDialog(
+                                dialogTitle = "An error occurred",
+                                dialogText = "The app is unable to process the query. The error message is: ${e.message}",
+                                dialogPositiveButtonText = "Change model",
+                                onPositiveButtonClick = {},
+                                dialogNegativeButtonText = "",
+                                onNegativeButtonClick = {},
+                            )
+                        }
                     }
                 }
+            }
         }
     }
 
@@ -275,43 +296,38 @@ class ChatScreenViewModel(
      * -1), then load the model. If not, show the model list dialog. Once the model is finalized,
      * read the system prompt and user messages from the database and add them to the model.
      */
-    fun loadModel() {
+    suspend fun loadModel(): Boolean {
         // clear resources occupied by the previous model
         smolLM.close()
         _currChatState.value?.let { chat ->
             if (chat.llmModelId == -1L) {
-                _showSelectModelListDialogState.value = true
+                withContext(Dispatchers.Main) {
+                    _showSelectModelListDialogState.value = true
+                }
+                return false // Model not loaded
             } else {
                 val model = modelsRepository.getModelFromId(chat.llmModelId)
                 if (model != null) {
                     _modelLoadState.value = ModelLoadingState.IN_PROGRESS
-                    CoroutineScope(Dispatchers.Default).launch {
-                        try {
-                            smolLM.create(
-                                model.path,
-                                chat.minP,
-                                chat.temperature,
-                                !chat.isTask,
-                                chat.contextSize.toLong(),
-                            )
-                            LOGD("Model loaded")
-                            if (chat.systemPrompt.isNotEmpty()) {
-                                smolLM.addSystemPrompt(chat.systemPrompt)
-                                LOGD("System prompt added")
-                            }
-                            if (!chat.isTask) {
-                                messagesDB.getMessagesForModel(chat.id).forEach { message ->
-                                    if (message.isUserMessage) {
-                                        smolLM.addUserMessage(message.message)
-                                        LOGD("User message added: ${message.message}")
-                                    } else {
-                                        smolLM.addAssistantMessage(message.message)
-                                        LOGD("Assistant message added: ${message.message}")
-                                    }
-                                }
-                            }
-                            withContext(Dispatchers.Main) { _modelLoadState.value = ModelLoadingState.SUCCESS }
-                        } catch (e: Exception) {
+                    return try {
+                        smolLM.create(
+                            model.path,
+                            chat.minP,
+                            chat.temperature,
+                            !chat.isTask,
+                            chat.contextSize.toLong(),
+                        )
+                        LOGD("Model loaded")
+                        if (chat.systemPrompt.isNotEmpty()) {
+                            smolLM.addSystemPrompt(chat.systemPrompt)
+                            LOGD("System prompt added")
+                        }
+                        withContext(Dispatchers.Main) {
+                            _modelLoadState.value = ModelLoadingState.SUCCESS
+                        }
+                        true // Model loaded successfully
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
                             _modelLoadState.value = ModelLoadingState.FAILURE
                             createAlertDialog(
                                 dialogTitle = context.getString(R.string.dialog_err_title),
@@ -322,12 +338,17 @@ class ChatScreenViewModel(
                                 onNegativeButtonClick = {},
                             )
                         }
+                        false // Model failed to load
                     }
                 } else {
-                    _showSelectModelListDialogState.value = true
+                    withContext(Dispatchers.Main) {
+                        _showSelectModelListDialogState.value = true
+                    }
+                    return false // Model not loaded
                 }
             }
         }
+        return false // No chat state, model not loaded
     }
 
     override fun onCleared() {
