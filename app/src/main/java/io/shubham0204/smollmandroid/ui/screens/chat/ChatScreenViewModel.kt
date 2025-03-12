@@ -152,13 +152,15 @@ class ChatScreenViewModel(
             Rag.load(
                 context,
                 chunksFile = FileUtilities.copyAssetToFile(context, "chunks.csv"),
-                vectorsFile = FileUtilities.copyAssetToFile(context, "embeddings.csv"),
-                modelFile = FileUtilities.copyAssetToFile(context, "bge-small-en-v1.5.onnx"),
-                embeddingTokenizerFile = FileUtilities.copyAssetToFile(context, "tokenizer.json"),
+                vectorsFile = FileUtilities.copyAssetToFile(context, "embeddings_granite.csv"),
+                modelFile = FileUtilities.copyAssetToFile(context, "granite.onnx"),
+                embeddingTokenizerFile = FileUtilities.copyAssetToFile(context, "tokenizer_granite.json"),
                 rerankerProps = RerankingProps(
                     tokenizer = FileUtilities.copyAssetToFile(context, "reranker_tokenizer.json"),
                     model = FileUtilities.copyAssetToFile(context, "mxbai-reranker-xsmall.onnx")
-                )
+                ),
+                // Some embedding models doesn't use TokenTypeIds (one of output tensors from the tokenizer) as input
+                useTokenTypeIds = false
             )
         }
     }
