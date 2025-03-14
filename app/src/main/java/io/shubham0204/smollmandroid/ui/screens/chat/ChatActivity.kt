@@ -103,6 +103,8 @@ import io.shubham0204.smollmandroid.ui.components.MediumLabelText
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.ManageTasksActivity
 import io.shubham0204.smollmandroid.ui.screens.manage_tasks.TasksList
 import io.shubham0204.smollmandroid.ui.theme.SmolLMAndroidTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
@@ -632,7 +634,9 @@ private fun SelectModelsList(viewModel: ChatScreenViewModel) {
             modelsList,
             onModelListItemClick = { model ->
                 viewModel.updateChatLLM(model.id)
-                viewModel.loadModel()
+                CoroutineScope(Dispatchers.Default).launch {
+                    viewModel.loadModel()
+                }
                 viewModel.hideSelectModelListDialog()
             },
             onModelDeleteClick = { model ->
