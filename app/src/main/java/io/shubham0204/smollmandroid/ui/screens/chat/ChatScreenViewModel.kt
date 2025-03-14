@@ -152,9 +152,9 @@ class ChatScreenViewModel(
             Rag.load(
                 context,
                 chunksFile = FileUtilities.copyAssetToFile(context, "chunks.csv"),
-                vectorsFile = FileUtilities.copyAssetToFile(context, "embeddings_granite.csv"),
-                modelFile = FileUtilities.copyAssetToFile(context, "granite.onnx"),
-                embeddingTokenizerFile = FileUtilities.copyAssetToFile(context, "tokenizer_granite.json"),
+                vectorsFile = FileUtilities.copyAssetToFile(context, "granite-30m_embeddings.csv"),
+                modelFile = FileUtilities.copyAssetToFile(context, "granite-30m.onnx"),
+                embeddingTokenizerFile = FileUtilities.copyAssetToFile(context, "granite-30m_tokenizer.json"),
                 rerankerProps = RerankingProps(
                     tokenizer = FileUtilities.copyAssetToFile(context, "reranker_tokenizer.json"),
                     model = FileUtilities.copyAssetToFile(context, "mxbai-reranker-xsmall.onnx")
